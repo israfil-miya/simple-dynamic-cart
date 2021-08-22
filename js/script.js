@@ -15,7 +15,8 @@ let pricing = {
 }
 
 let selection_area = document.getElementById("selection_area")
-let discount = 150
+let discount = 150;
+let discount_codeName = "WOW69";
 function calculate_price(total) {
   if (document.getElementById("final_total").getAttribute("class") == "discounted") {
     return total-discount;
@@ -45,7 +46,7 @@ selection_area.addEventListener('click', function(e) {
 function promoCode() {
   let inputEle = document.getElementById("promo_code");
   let inputBtn = document.getElementById("promo_btn");
-  if (inputEle.value == "WOW") {
+  if (inputEle.value == discount_codeName) {
     let total_price = parseInt(document.getElementById("final_total").innerHTML)
     if (total_price != 0 && total_price >= discount) {
       document.getElementById("final_total").innerHTML = total_price-discount;
