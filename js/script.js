@@ -34,41 +34,60 @@ $(document).ready(function () {
     window.lucide.createIcons();
   }
   // pre-defining default values ( only item price )
-  $("#total_price").html($("#fixed_price").html());
-  $("#final_total").html(calculate_price($("#fixed_price").html()));
+  const base = parseInt($("#fixed_price").html(), 10) || 0;
+  // Ensure extras are zeroed on load
+  $("#memory_total").html(0);
+  $("#storage_total").html(0);
+  $("#delivery_total").html(0);
+  $("#total_price").html(base);
+  $("#final_total").html(calculate_price(base));
 
-  // on option click event handling
+  // on option click event handling (with deselect for extra items)
   $("#selection_area").on("click", function (e) {
-    let target_option = $(e.target).closest(".option-btn"); // ensure button target
+    const target_option = $(e.target).closest(".option-btn"); // ensure button target
     if (target_option.length === 0) return; // ignore non-button clicks
 
-    let item_cat = target_option.data("cat"); // category from data attribute
-    let item_option_value = target_option.attr("id"); // option id
-    let item_price = pricing[item_cat][item_option_value]; // price from db
+    const item_cat = target_option.data("cat"); // category from data attribute
+    const item_option_value = target_option.attr("id"); // option id
+    const item_price =
+      (pricing[item_cat] && pricing[item_cat][item_option_value]) || 0; // price from db
 
-    // showing which option selected in client-side
-    let total_price_option = $("#" + item_cat + "_total");
-    total_price_option.html(item_price);
+    const total_price_option = $("#" + item_cat + "_total");
 
-    // toggle pressed/active within the group
-    $(`.option-btn[data-cat='${item_cat}']`)
-      .removeClass("active")
-      .attr("aria-pressed", "false");
-    target_option.addClass("active").attr("aria-pressed", "true");
+    // For extra items (memory, storage): allow deselect to revert to $0
+    if (item_cat === "memory" || item_cat === "storage") {
+      if (target_option.hasClass("active")) {
+        // Deselect current option
+        target_option.removeClass("active").attr("aria-pressed", "false");
+        total_price_option.html(0);
+      } else {
+        // Select this option and deselect others in the same group
+        $(`.option-btn[data-cat='${item_cat}']`)
+          .removeClass("active")
+          .attr("aria-pressed", "false");
+        target_option.addClass("active").attr("aria-pressed", "true");
+        total_price_option.html(item_price);
+      }
+    } else {
+      // For non-extra items (e.g., delivery): behave like radio (no deselect)
+      $(`.option-btn[data-cat='${item_cat}']`)
+        .removeClass("active")
+        .attr("aria-pressed", "false");
+      target_option.addClass("active").attr("aria-pressed", "true");
+      total_price_option.html(item_price);
+    }
 
-    // calculating the chosen options total price
+    // Recalculate totals
     let total = 0;
     $(".total").each(function () {
-      let price = parseInt($(this).html(), 10);
+      const price = parseInt($(this).html(), 10) || 0;
       total += price;
     });
-
-    // defining the final output/total price ( dynamic )
-    $("#final_total").html(calculate_price(total));
     $("#total_price").html(total);
+    $("#final_total").html(calculate_price(total));
   });
 
-  // promo-code functionality - using jQuery event handler
+  // promo-code functionality
   $("#promo_btn").on("click", function () {
     promoCode();
   });
@@ -79,11 +98,7 @@ $(document).ready(function () {
     }
   });
 
-  // Optional: set sensible defaults (first option in each group)
-  ["memory", "storage", "delivery"].forEach(function (cat) {
-    const firstBtn = $(`.option-btn[data-cat='${cat}']`).first();
-    if (firstBtn.length) firstBtn.trigger("click");
-  });
+  // No defaults for extra items (memory, storage). Delivery also starts unselected.
 });
 
 // promo-code functionality
