@@ -17,7 +17,7 @@ let pricing = {
 
 // discount
 let discount = 150;
-let discount_codeName = "WOW69";
+let discount_codeName = "WOWNICE";
 
 // final total price calculating
 function calculate_price(total) {
@@ -69,7 +69,6 @@ $(document).ready(function () {
         total_price_option.html(item_price);
       }
     } else {
-      // For non-extra items (e.g., delivery): behave like radio (no deselect)
       $(`.option-btn[data-cat='${item_cat}']`)
         .removeClass("active")
         .attr("aria-pressed", "false");
@@ -97,8 +96,6 @@ $(document).ready(function () {
       promoCode();
     }
   });
-
-  // No defaults for extra items (memory, storage). Delivery also starts unselected.
 });
 
 // promo-code functionality
